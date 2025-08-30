@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Blog Modern UI</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',sans-serif;}
+body{min-height:100vh; display:flex; flex-direction:column; background:linear-gradient(135deg,#cfd9df,#e2ebf0); color:#333;}
+header{padding:20px; text-align:center; background:linear-gradient(90deg,#4f46e5,#6366f1); color:white; box-shadow:0 4px 10px rgba(0,0,0,0.1);}
+header h1{font-size:2rem;}
+.container{max-width:1200px; width:95%; margin:30px auto; flex:1;}
+
+/* Glassmorphism Login & Form */
+.glass-card{background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:20px; box-shadow:0 8px 25px rgba(0,0,0,0.15); padding:30px; max-width:450px; margin:50px auto;}
+.glass-card h2{color:#4f46e5;margin-bottom:20px;text-align:center;}
+.glass-card input, .glass-card textarea{width:100%; padding:12px 15px; margin-bottom:15px; border-radius:10px; border:1px solid rgba(255,255,255,0.5); outline:none; background:rgba(255,255,255,0.3); color:#000; transition:0.3s;}
+.glass-card input:focus, .glass-card textarea:focus{border-color:#6366f1; box-shadow:0 0 10px rgba(99,102,241,0.5);}
+.glass-card button{width:100%; padding:12px; background:#4f46e5; color:white; border:none; border-radius:12px; font-weight:600; cursor:pointer; transition:0.3s;}
+.glass-card button:hover{background:#6366f1;}
+
+/* Dashboard */
+#dashboard{display:none;}
+#postForm{margin-bottom:30px;}
+#search{width:100%; padding:12px 15px; margin-bottom:20px; border-radius:12px; border:1px solid #ccc; outline:none; transition:0.3s;}
+#search:focus{border-color:#6366f1; box-shadow:0 0 10px rgba(99,102,241,0.3);}
+
+/* Blog cards */
+.blog-container{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:25px;}
+.blog-card{background:rgba(255,255,255,0.25); backdrop-filter:blur(8px); border-radius:20px; overflow:hidden; box-shadow:0 8px 20px rgba(0,0,0,0.1); transition:0.3s; display:flex; flex-direction:column;}
+.blog-card:hover{transform:translateY(-7px); box-shadow:0 12px 25px rgba(0,0,0,0.2);}
+.blog-card img{width:100%; height:180px; object-fit:cover;}
+.blog-content{padding:15px; flex:1; display:flex; flex-direction:column;}
+.blog-content h3{color:#4f46e5;margin-bottom:10px;}
+.blog-content p{flex:1;font-size:0.95rem;margin-bottom:10px;color:#333;}
+.blog-content span{font-size:0.85rem;color:#555; margin-bottom:10px;}
+.blog-actions{display:flex; gap:10px;}
+.blog-actions button{padding:6px 12px; border:none; border-radius:8px; cursor:pointer; font-size:0.85rem; transition:0.3s;}
+.edit-btn{background:#facc15; color:#000;}
+.edit-btn:hover{background:#eab308;}
+.delete-btn{background:#ef4444; color:white;}
+.delete-btn:hover{background:#dc2626;}
+
+/* Footer */
+footer{background:#4f46e5;color:white;padding:20px;text-align:center;margin-top:auto;border-radius:10px;}
+footer .social-icons{margin-top:10px;}
+footer .social-icons a{color:white;margin:0 10px;font-size:1.2rem; transition:0.3s;}
+footer .social-icons a:hover{color:#facc15;}
+
+/* Responsive */
+@media(max-width:600px){.glass-card{margin:20px auto;padding:20px;}}
+</style>
+</head>
+<body>
+
+<header><h1>Advanced Blog Platform</h1></header>
+
+<div class="container">
+
+<!-- Login Form -->
+<div id="loginForm" class="glass-card">
+<h2>Admin Login</h2>
+<input type="text" id="username" placeholder="Username">
+<input type="password" id="password" placeholder="Password">
+<button onclick="login()">Login</button>
+</div>
+
+<!-- Dashboard -->
+<div id="dashboard">
+<h2>Dashboard</h2>
+
+<!-- Post Form -->
+<div id="postForm" class="glass-card">
+<input type="text" id="postTitle" placeholder="Blog Title">
+<textarea id="postContent" rows="4" placeholder="Blog Content"></textarea>
+<input type="date" id="postDate">
+<input type="file" id="postImageFile" accept="image/*">
+<button onclick="addPost()">Post Blog</button>
+</div>
+
+<!-- Search -->
+<input type="text" id="search" placeholder="Search by title or date...">
+
+<!-- Blog Container -->
+<div class="blog-container" id="blogContainer"></div>
+</div>
+
+</div>
+
+<footer>
+<p>&copy; 2025 Advanced Blog. All rights reserved.</p>
+<div class="social-icons">
+<a href="https://www.linkedin.com/in/shivom17" target="_blank"><i class="fab fa-linkedin"></i></a>
+<a href="https://www.instagram.com/" target="_blank"><i class="fab fa-instagram"></i></a>
+<a href="https://www.kaggle.com/" target="_blank"><i class="fab fa-kaggle"></i></a>
+<a href="https://medium.com/" target="_blank"><i class="fab fa-medium"></i></a>
+</div>
+</footer>
+
+<script>
+const adminUser = { username: "admin", password: "admin123" };
+const storageKey = "advancedBlogPosts";
+
+function login(){
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
+    if(user===adminUser.username && pass===adminUser.password){
+        document.getElementById('loginForm').style.display='none';
+        document.getElementById('dashboard').style.display='block';
+        loadPosts();
+    } else { alert("Invalid credentials!"); }
+}
+
+function loadPosts(){
+    const posts=JSON.parse(localStorage.getItem(storageKey))||[];
+    displayPosts(posts);
+}
+
+function displayPosts(posts){
+    const container=document.getElementById('blogContainer');
+    container.innerHTML="";
+    posts.sort((a,b)=> new Date(b.date)-new Date(a.date));
+    posts.forEach((post,index)=>{
+        const card=document.createElement('div');
+        card.className="blog-card";
+        card.innerHTML=`
+        <img src="${post.image||'https://source.unsplash.com/random/400x200?sig='+index}" alt="Blog Image">
+        <div class="blog-content">
+            <h3>${post.title}</h3>
+            <p>${post.content}</p>
+            <span>${post.date}</span>
+            <div class="blog-actions">
+                <button class="edit-btn" onclick="editPost(${index})">Edit</button>
+                <button class="delete-btn" onclick="deletePost(${index})">Delete</button>
+            </div>
+        </div>`;
+        container.appendChild(card);
+    });
+}
+
+function addPost(){
+    const title=document.getElementById('postTitle').value;
+    const content=document.getElementById('postContent').value;
+    const date=document.getElementById('postDate').value;
+    const fileInput=document.getElementById('postImageFile');
+    if(!title||!content||!date){alert("Please fill all fields!"); return;}
+    const posts=JSON.parse(localStorage.getItem(storageKey))||[];
+    if(fileInput.files&&fileInput.files[0]){
+        const reader=new FileReader();
+        reader.onload=function(e){
+            posts.push({title,content,date,image:e.target.result});
+            localStorage.setItem(storageKey,JSON.stringify(posts));
+            clearForm(); loadPosts();
+        }
+        reader.readAsDataURL(fileInput.files[0]);
+    } else { posts.push({title,content,date,image:null}); localStorage.setItem(storageKey,JSON.stringify(posts)); clearForm(); loadPosts(); }
+}
+
+function clearForm(){document.getElementById('postTitle').value="";document.getElementById('postContent').value="";document.getElementById('postDate').value="";document.getElementById('postImageFile').value="";}
+
+function editPost(index){
+    const posts=JSON.parse(localStorage.getItem(storageKey));
+    const post=posts[index];
+    const newTitle=prompt("Edit Title",post.title);
+    const newContent=prompt("Edit Content",post.content);
+    const newDate=prompt("Edit Date",post.date);
+    if(newTitle && newContent && newDate){posts[index]={...post,title:newTitle,content:newContent,date:newDate}; localStorage.setItem(storageKey,JSON.stringify(posts)); loadPosts();}
+}
+
+function deletePost(index){
+    if(confirm("Are you sure to delete this post?")){
+        const posts=JSON.parse(localStorage.getItem(storageKey));
+        posts.splice(index,1);
+        localStorage.setItem(storageKey,JSON.stringify(posts));
+        loadPosts();
+    }
+}
+
+document.getElementById('search').addEventListener('input',function(){
+    const query=this.value.toLowerCase();
+    const posts=JSON.parse(localStorage.getItem(storageKey))||[];
+    const filtered=posts.filter(p=>p.title.toLowerCase().includes(query)||p.date.includes(query));
+    displayPosts(filtered);
+});
+</script>
+
+</body>
+</html>
